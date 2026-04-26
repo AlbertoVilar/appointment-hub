@@ -133,8 +133,17 @@ public class Appointment {
 
     // Domain behavior to implement when appointment rules are modeled.
     public void confirm() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (this.status == AppointmentStatus.CONFIRMED) {
+            throw new DomainException("Agendamento ja esta confirmado.");
+        }
+        if (this.status != AppointmentStatus.SCHEDULED) {
+            throw new DomainException("So e possivel confirmar agendamentos pendentes.");
+        }
+
+        this.status = AppointmentStatus.CONFIRMED;
+
     }
+
 
     public void cancel(String reason) {
         if (this.status == AppointmentStatus.CANCELED) {
