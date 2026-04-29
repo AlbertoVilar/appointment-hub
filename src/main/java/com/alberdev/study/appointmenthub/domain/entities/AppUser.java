@@ -79,6 +79,10 @@ public class AppUser {
         return enabled;
     }
 
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
     public void disable() {
 
         if (!enabled) {
