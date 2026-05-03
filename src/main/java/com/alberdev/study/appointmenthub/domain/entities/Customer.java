@@ -47,14 +47,6 @@ public class Customer {
         this.active = active;
     }
 
-    public void activate() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void deactivate() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
     public Long getId() {
         return id;
     }
@@ -87,6 +79,7 @@ public class Customer {
         this.phone = phone;
     }
 
+
     public void setActive(boolean active) {
         this.active = active;
     }
@@ -109,6 +102,22 @@ public class Customer {
 
         appointment.setCustomer(this);
         this.appointments.add(appointment);
+    }
+
+    public void activate() {
+        if (active) {
+            throw new DomainException("Cliente ja esta ativo.");
+        }
+
+        active = true;
+    }
+
+    public void deactivate() {
+        if (!active) {
+            throw new DomainException("Cliente ja esta inativo.");
+        }
+
+        active = false;
     }
 
     @Override
