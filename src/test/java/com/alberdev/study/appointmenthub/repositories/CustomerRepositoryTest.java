@@ -2,6 +2,7 @@ package com.alberdev.study.appointmenthub.repositories;
 
 import com.alberdev.study.appointmenthub.domain.entities.Customer;
 import com.alberdev.study.appointmenthub.domain.entities.CustomerTestData;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.CustomerRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,10 @@
 package com.alberdev.study.appointmenthub.repositories;
 
 import com.alberdev.study.appointmenthub.domain.entities.Appointment;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.AppointmentRepository;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.CustomerRepository;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.ProfessionalRepository;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.ServiceOfferingRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

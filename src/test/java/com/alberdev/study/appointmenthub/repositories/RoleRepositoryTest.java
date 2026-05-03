@@ -2,6 +2,7 @@ package com.alberdev.study.appointmenthub.repositories;
 
 import com.alberdev.study.appointmenthub.domain.entities.Role;
 import com.alberdev.study.appointmenthub.domain.entities.RoleTestData;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.RoleRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

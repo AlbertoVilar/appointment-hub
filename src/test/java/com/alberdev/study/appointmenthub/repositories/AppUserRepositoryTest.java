@@ -4,6 +4,8 @@ import com.alberdev.study.appointmenthub.domain.entities.AppUser;
 import com.alberdev.study.appointmenthub.domain.entities.AppUserTestData;
 import com.alberdev.study.appointmenthub.domain.entities.Role;
 import com.alberdev.study.appointmenthub.domain.entities.RoleTestData;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.AppUserRepository;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.RoleRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
