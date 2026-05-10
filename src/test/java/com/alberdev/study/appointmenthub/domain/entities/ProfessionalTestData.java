@@ -10,6 +10,7 @@ public final class ProfessionalTestData {
         professional.setName("Dra. Ana Costa");
         professional.setSpecialty("Fisioterapia");
         professional.setActive(true);
+        professional.setAppUser(AppUserTestData.createValidAppUser());
         return professional;
     }
 }

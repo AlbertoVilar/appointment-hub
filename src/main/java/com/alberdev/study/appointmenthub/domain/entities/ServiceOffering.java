@@ -48,22 +48,6 @@ public class ServiceOffering {
         this.active = active;
     }
 
-    public void activate() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void deactivate() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void updateBasePrice(BigDecimal newPrice) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void updateDuration(Integer newDurationInMinutes) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
     public Long getId() {
         return id;
     }
@@ -104,8 +88,32 @@ public class ServiceOffering {
         this.active = active;
     }
 
-    public Set<Appointment> getAppointments() {
-        return appointments;
+    public void activate() {
+
+        if (active) throw new DomainException("Este servico ja esta ativo.");
+        this.active = true;
+    }
+
+    public void deactivate() {
+        if (!active) throw new DomainException("Este servico ja esta desativado.");
+        this.active = false;
+    }
+
+    public void updateBasePrice(BigDecimal newPrice) {
+
+        if (newPrice == null || newPrice.signum() <= 0) {
+            throw new DomainException("O preco base nao pode ser nulo, zero ou negativo.");
+        }
+
+        this.basePrice = newPrice;
+    }
+
+    public void updateDuration(Integer newDurationInMinutes) {
+        if (newDurationInMinutes == null || newDurationInMinutes <= 0) {
+            throw new DomainException("A duracao nao pode ser nula, zero ou negativa.");
+        }
+
+        this.durationInMinutes = newDurationInMinutes;
     }
 
     public void addAppointment(Appointment appointment) {

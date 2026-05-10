@@ -2,6 +2,7 @@ package com.alberdev.study.appointmenthub.repositories;
 
 import com.alberdev.study.appointmenthub.domain.entities.Professional;
 import com.alberdev.study.appointmenthub.domain.entities.ProfessionalTestData;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.AppUserRepository;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.ProfessionalRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,14 +25,18 @@ class ProfessionalRepositoryTest {
     private ProfessionalRepository repository;
 
     @Autowired
+    private AppUserRepository appUserRepository;
+
+    @Autowired
     private TestEntityManager entityManager;
 
     @Test
     @DisplayName("Deve salvar profissional com sucesso")
     void shouldSaveProfessional() {
         // 1. Arrange: Criar um Professional usando seu Object Mother
-        // Dica: no mapeamento atual, AppUser nao e obrigatorio para salvar Professional.
         var professional = ProfessionalTestData.createValidProfessional();
+        var savedAppUser = appUserRepository.saveAndFlush(professional.getAppUser());
+        professional.setAppUser(savedAppUser);
 
         // 2. Act
         var savedProfessional = repository.saveAndFlush(professional);
@@ -46,6 +51,7 @@ class ProfessionalRepositoryTest {
         assertNotNull(result.getId());
         assertEquals("Dra. Ana Costa", result.getName());
         assertEquals("Fisioterapia", result.getSpecialty());
+        assertEquals(savedAppUser.getId(), result.getAppUser().getId());
         assertTrue(result.isActive());
 
     }

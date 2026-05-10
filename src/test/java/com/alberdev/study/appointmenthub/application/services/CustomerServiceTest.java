@@ -188,12 +188,12 @@ class CustomerServiceTest {
         Customer updateData = new Customer();
 
         // 3. Arrange: simular repository.findById retornando o cliente existente
-        Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(customerOriginal));
+        Mockito.when(customerRepository.findById(customerOriginal.getId())).thenReturn(Optional.of(customerOriginal));
         // 4. Arrange: simular repository.save retornando o cliente preservado
         Mockito.when(customerRepository.save(Mockito.any(Customer.class)))
                 .thenReturn(customerOriginal);
         // 5. Act: chamar customerService.update(id, customerUpdate)
-        var result = customerService.update(1L, updateData);
+        var result = customerService.update(customerOriginal.getId(), updateData);
         // 6. Assert: validar que name, email e phone originais foram preservados
         assertNotNull(result);
         assertEquals("Joao Silva", result.getName());

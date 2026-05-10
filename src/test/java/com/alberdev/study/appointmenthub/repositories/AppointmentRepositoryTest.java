@@ -1,6 +1,7 @@
 package com.alberdev.study.appointmenthub.repositories;
 
 import com.alberdev.study.appointmenthub.domain.entities.Appointment;
+import com.alberdev.study.appointmenthub.infrastructure.repositories.AppUserRepository;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.AppointmentRepository;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.CustomerRepository;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.ProfessionalRepository;
@@ -36,6 +37,9 @@ class AppointmentRepositoryTest {
     private ProfessionalRepository professionalRepository;
 
     @Autowired
+    private AppUserRepository appUserRepository;
+
+    @Autowired
     private ServiceOfferingRepository serviceOfferingRepository;
 
     @Autowired
@@ -51,6 +55,8 @@ class AppointmentRepositoryTest {
         // 3. Arrange: Criar um Professional valido usando ProfessionalTestData
         var professional = createValidProfessional();
         // 4. Arrange: Salvar o Professional, pois Appointment.professional e obrigatorio
+        var savedAppUser = appUserRepository.saveAndFlush(professional.getAppUser());
+        professional.setAppUser(savedAppUser);
         var savedProfessional = professionalRepository.saveAndFlush(professional);
         // 5. Arrange: Criar um ServiceOffering valido usando ServiceOfferingTestData
         var serviceOffering = createValidServiceOffering();

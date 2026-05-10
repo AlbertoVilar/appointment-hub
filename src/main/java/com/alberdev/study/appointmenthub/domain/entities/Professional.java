@@ -34,7 +34,7 @@ public class Professional {
     private boolean active;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "app_user_id", unique = true)
+    @JoinColumn(name = "app_user_id", unique = true, nullable = false)
     private AppUser appUser;
 
     @OneToMany(mappedBy = "professional")
@@ -49,18 +49,6 @@ public class Professional {
         this.specialty = specialty;
         this.active = active;
         this.appUser = appUser;
-    }
-
-    public void activate() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void deactivate() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void updateSpecialty(String specialty) {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public Long getId() {
@@ -105,6 +93,31 @@ public class Professional {
 
     public Set<Appointment> getAppointments() {
         return appointments;
+    }
+
+    public void updateSpecialty(String specialty) {
+
+        if (specialty == null || specialty.isBlank()) {
+            throw new DomainException("Especialidade nao pode ser nula ou em branco");
+        }
+        this.specialty = specialty.trim();
+    }
+
+    public void activate() {
+
+        if (active) {
+            throw new DomainException("Profissional ja esta ativo.");
+        }
+        active = true;
+
+    }
+
+    public void deactivate() {
+
+        if (!active) {
+            throw new DomainException("Profissional ja esta inativo.");
+        }
+        active = false;
     }
 
     public void addAppointment(Appointment appointment) {
