@@ -4,7 +4,6 @@ import com.alberdev.study.appointmenthub.domain.enums.AppointmentStatus;
 
 import java.time.LocalDateTime;
 
-import static com.alberdev.study.appointmenthub.domain.entities.AppUserTestData.createValidAppUser;
 import static com.alberdev.study.appointmenthub.domain.entities.CustomerTestData.createValidCustomer;
 import static com.alberdev.study.appointmenthub.domain.entities.ProfessionalTestData.createValidProfessional;
 import static com.alberdev.study.appointmenthub.domain.entities.ServiceOfferingTestData.createValidServiceOffering;
@@ -20,6 +19,17 @@ public final class AppointmentTestData {
         appointment.setProfessional(createValidProfessional());
         appointment.setServiceOffering(createValidServiceOffering());
         appointment.setScheduledAt(LocalDateTime.now().plusDays(1).withNano(0));
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+        appointment.setNotes("Primeiro atendimento");
+        return appointment;
+    }
+
+    public static Appointment createValidSchedulableAppointment() {
+        Appointment appointment = new Appointment();
+        appointment.assignCustomer(createValidCustomer());
+        appointment.assignProfessional(createValidProfessional());
+        appointment.assignServiceOffering(createValidServiceOffering());
+        appointment.scheduleAt(LocalDateTime.now().plusDays(1).withNano(0));
         appointment.setStatus(AppointmentStatus.SCHEDULED);
         appointment.setNotes("Primeiro atendimento");
         return appointment;

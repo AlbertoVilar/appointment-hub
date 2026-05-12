@@ -78,6 +78,50 @@ public class Appointment {
     public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
 
     // Comportamentos de Domínio (Regras de Negócio)
+    public void assignCustomer(Customer customer) {
+        if (customer == null) {
+            throw new DomainException("Cliente nao pode ser nulo.");
+        }
+        if (!customer.isActive()) {
+            throw new DomainException("Nao e possivel agendar para um cliente inativo.");
+        }
+
+        this.customer = customer;
+    }
+
+    public void assignProfessional(Professional professional) {
+        if (professional == null) {
+            throw new DomainException("Profissional nao pode ser nulo.");
+        }
+        if (!professional.isActive()) {
+            throw new DomainException("Nao e possivel agendar com um profissional inativo.");
+        }
+
+        this.professional = professional;
+    }
+
+    public void assignServiceOffering(ServiceOffering serviceOffering) {
+        if (serviceOffering == null) {
+            throw new DomainException("Servico nao pode ser nulo.");
+        }
+        if (!serviceOffering.isActive()) {
+            throw new DomainException("Nao e possivel agendar um servico inativo.");
+        }
+
+        this.serviceOffering = serviceOffering;
+    }
+
+    public void scheduleAt(LocalDateTime scheduledAt) {
+        if (scheduledAt == null) {
+            throw new DomainException("A data do agendamento nao pode ser nula.");
+        }
+        if (scheduledAt.isBefore(LocalDateTime.now())) {
+            throw new DomainException("A data do agendamento nao pode estar no passado.");
+        }
+
+        this.scheduledAt = scheduledAt;
+    }
+
     public void confirm() {
         ensureStatusIn(AppointmentStatus.SCHEDULED);
         this.status = AppointmentStatus.CONFIRMED;
@@ -120,11 +164,8 @@ public class Appointment {
 
     public void reschedule(LocalDateTime newScheduledAt) {
         ensureStatusIn(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED);
-        if (newScheduledAt.isBefore(LocalDateTime.now())) {
-            throw new DomainException("Não é possível reagendar para uma data que já passou.");
-        }
 
-        this.scheduledAt = newScheduledAt;
+        scheduleAt(newScheduledAt);
         this.status = AppointmentStatus.SCHEDULED;
     }
 

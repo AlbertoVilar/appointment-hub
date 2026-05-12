@@ -42,6 +42,144 @@ class AppointmentTest {
         );
     }
 
+    // Assign appointment relationships
+
+    @Test
+    void shouldAssignActiveCustomerSuccessfully() {
+        Customer activeCustomer = new Customer();
+        activeCustomer.setActive(true);
+
+        appointment.assignCustomer(activeCustomer);
+
+        assertEquals(activeCustomer, appointment.getCustomer());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAssigningNullCustomer() {
+        Customer originalCustomer = appointment.getCustomer();
+
+        assertThrows(DomainException.class, () -> {
+            appointment.assignCustomer(null);
+        });
+
+        assertEquals(originalCustomer, appointment.getCustomer());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAssigningInactiveCustomer() {
+        Customer originalCustomer = appointment.getCustomer();
+        Customer inactiveCustomer = new Customer();
+        inactiveCustomer.setActive(false);
+
+        assertThrows(DomainException.class, () -> {
+            appointment.assignCustomer(inactiveCustomer);
+        });
+
+        assertEquals(originalCustomer, appointment.getCustomer());
+    }
+
+    @Test
+    void shouldAssignActiveProfessionalSuccessfully() {
+        Professional activeProfessional = new Professional();
+        activeProfessional.setActive(true);
+
+        appointment.assignProfessional(activeProfessional);
+
+        assertEquals(activeProfessional, appointment.getProfessional());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAssigningNullProfessional() {
+        Professional originalProfessional = appointment.getProfessional();
+
+        assertThrows(DomainException.class, () -> {
+            appointment.assignProfessional(null);
+        });
+
+        assertEquals(originalProfessional, appointment.getProfessional());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAssigningInactiveProfessional() {
+        Professional originalProfessional = appointment.getProfessional();
+        Professional inactiveProfessional = new Professional();
+        inactiveProfessional.setActive(false);
+
+        assertThrows(DomainException.class, () -> {
+            appointment.assignProfessional(inactiveProfessional);
+        });
+
+        assertEquals(originalProfessional, appointment.getProfessional());
+    }
+
+    @Test
+    void shouldAssignActiveServiceOfferingSuccessfully() {
+        ServiceOffering activeServiceOffering = new ServiceOffering();
+        activeServiceOffering.setActive(true);
+
+        appointment.assignServiceOffering(activeServiceOffering);
+
+        assertEquals(activeServiceOffering, appointment.getServiceOffering());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAssigningNullServiceOffering() {
+        ServiceOffering originalServiceOffering = appointment.getServiceOffering();
+
+        assertThrows(DomainException.class, () -> {
+            appointment.assignServiceOffering(null);
+        });
+
+        assertEquals(originalServiceOffering, appointment.getServiceOffering());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAssigningInactiveServiceOffering() {
+        ServiceOffering originalServiceOffering = appointment.getServiceOffering();
+        ServiceOffering inactiveServiceOffering = new ServiceOffering();
+        inactiveServiceOffering.setActive(false);
+
+        assertThrows(DomainException.class, () -> {
+            appointment.assignServiceOffering(inactiveServiceOffering);
+        });
+
+        assertEquals(originalServiceOffering, appointment.getServiceOffering());
+    }
+
+    // Schedule appointment date
+
+    @Test
+    void shouldScheduleAtFutureDateSuccessfully() {
+        LocalDateTime futureDate = LocalDateTime.now().plusDays(2);
+
+        appointment.scheduleAt(futureDate);
+
+        assertEquals(futureDate, appointment.getScheduledAt());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSchedulingAtNullDate() {
+        LocalDateTime originalDate = appointment.getScheduledAt();
+
+        assertThrows(DomainException.class, () -> {
+            appointment.scheduleAt(null);
+        });
+
+        assertEquals(originalDate, appointment.getScheduledAt());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSchedulingAtPastDate() {
+        LocalDateTime originalDate = appointment.getScheduledAt();
+        LocalDateTime pastDate = LocalDateTime.now().minusDays(1);
+
+        assertThrows(DomainException.class, () -> {
+            appointment.scheduleAt(pastDate);
+        });
+
+        assertEquals(originalDate, appointment.getScheduledAt());
+    }
+
     // Confirm appointment
 
     @Test
