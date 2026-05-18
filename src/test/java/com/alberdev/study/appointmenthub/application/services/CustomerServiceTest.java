@@ -267,7 +267,7 @@ class CustomerServiceTest {
         // 1. Arrange: criar Customer inativo com id
         var inactiveCustomer = createValidCustomer();
         inactiveCustomer.setId(1L);
-        inactiveCustomer.setActive(false);
+        inactiveCustomer.deactivate();
 
         // 2. Arrange: simular repository.findById retornando esse Customer
         Mockito.when(customerRepository.findById(inactiveCustomer.getId()))
@@ -289,7 +289,6 @@ class CustomerServiceTest {
         // 1. Arrange: criar Customer ativo com id
         var activeCustomer = createValidCustomer();
         activeCustomer.setId(1L);
-        activeCustomer.setActive(true);
 
         // 2. Arrange: simular repository.findById retornando esse Customer
         Mockito.when(customerRepository.findById(activeCustomer.getId()))
@@ -311,7 +310,6 @@ class CustomerServiceTest {
         // 1. Arrange: criar Customer ativo com id
         var activeCustomer = createValidCustomer();
         activeCustomer.setId(1L);
-        activeCustomer.setActive(true);
 
         // 2. Arrange: simular repository.findById retornando esse Customer
         Mockito.when(customerRepository.findById(activeCustomer.getId()))
@@ -332,7 +330,7 @@ class CustomerServiceTest {
         // 1. Arrange: criar Customer inativo com id
         var inactiveCustomer = createValidCustomer();
         inactiveCustomer.setId(1L);
-        inactiveCustomer.setActive(false);
+        inactiveCustomer.deactivate();
 
         // 2. Arrange: simular repository.findById retornando esse Customer
         Mockito.when(customerRepository.findById(inactiveCustomer.getId()))

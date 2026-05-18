@@ -39,12 +39,12 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(Long id, String name, String email, String phone, boolean active) {
+    public Customer(Long id, String name, String email, String phone) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.phone = phone;
-        this.active = active;
+        this.active = true;
     }
 
     public Long getId() {
@@ -79,18 +79,10 @@ public class Customer {
         this.phone = phone;
     }
 
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public boolean isActive() {
         return active;
     }
 
-    public Set<Appointment> getAppointments() {
-        return appointments;
-    }
 
     public void addAppointment(Appointment appointment) {
         if (appointment == null) {
