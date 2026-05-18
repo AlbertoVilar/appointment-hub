@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.alberdev.study.appointmenthub.domain.entities.CustomerTestData.createValidCustomer;
 
 @ExtendWith(MockitoExtension.class)
 class AppointmentTest {
@@ -46,8 +47,7 @@ class AppointmentTest {
 
     @Test
     void shouldAssignActiveCustomerSuccessfully() {
-        Customer activeCustomer = new Customer();
-        activeCustomer.setActive(true);
+        Customer activeCustomer = createValidCustomer();
 
         appointment.assignCustomer(activeCustomer);
 
@@ -68,8 +68,8 @@ class AppointmentTest {
     @Test
     void shouldThrowExceptionWhenAssigningInactiveCustomer() {
         Customer originalCustomer = appointment.getCustomer();
-        Customer inactiveCustomer = new Customer();
-        inactiveCustomer.setActive(false);
+        Customer inactiveCustomer = createValidCustomer();
+        inactiveCustomer.deactivate();
 
         assertThrows(DomainException.class, () -> {
             appointment.assignCustomer(inactiveCustomer);
