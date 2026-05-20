@@ -8,11 +8,12 @@ import com.alberdev.study.appointmenthub.infrastructure.repositories.Appointment
 import com.alberdev.study.appointmenthub.infrastructure.repositories.CustomerRepository;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.ProfessionalRepository;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.ServiceOfferingRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class AppointmentService {
@@ -74,8 +75,8 @@ public class AppointmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<Appointment> findAll() {
-        return appointmentRepository.findAll();
+    public Page<Appointment> findAll(Pageable pageable) {
+        return appointmentRepository.findAll(pageable);
     }
 
     @Transactional

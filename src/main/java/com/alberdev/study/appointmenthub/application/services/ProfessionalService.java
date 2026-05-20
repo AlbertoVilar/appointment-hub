@@ -5,10 +5,10 @@ import com.alberdev.study.appointmenthub.domain.exceptions.DomainException;
 import com.alberdev.study.appointmenthub.domain.exceptions.ResourceAlreadyExistsException;
 import com.alberdev.study.appointmenthub.domain.exceptions.ResourceNotFoundException;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.ProfessionalRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class ProfessionalService {
@@ -44,8 +44,8 @@ public class ProfessionalService {
     }
 
     @Transactional(readOnly = true)
-    public List<Professional> findAll() {
-        return professionalRepository.findAll();
+    public Page<Professional> findAll(Pageable pageable) {
+        return professionalRepository.findAll(pageable);
     }
 
     //UPDATE

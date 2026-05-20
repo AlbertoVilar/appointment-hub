@@ -12,6 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -137,16 +140,19 @@ class ServiceOfferingServiceTest {
         secondServiceOffering.setName("Retorno");
 
         var serviceOfferings = List.of(firstServiceOffering, secondServiceOffering);
-        // 2. Arrange: simular repository.findAll retornando a lista
-        Mockito.when(serviceOfferingRepository.findAll()).thenReturn(serviceOfferings);
-        // 3. Act: chamar serviceOfferingService.findAll()
-        var result = serviceOfferingService.findAll();
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // 2. Arrange: simular repository.findAll retornando uma pagina
+        Mockito.when(serviceOfferingRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(serviceOfferings, pageable, serviceOfferings.size()));
+        // 3. Act: chamar serviceOfferingService.findAll(pageable)
+        var result = serviceOfferingService.findAll(pageable);
         // 4. Assert: validar tamanho e dados retornados
-        assertEquals(2, result.size());
-        assertEquals(firstServiceOffering.getName(), result.get(0).getName());
-        assertEquals(secondServiceOffering.getName(), result.get(1).getName());
+        assertEquals(2, result.getContent().size());
+        assertEquals(firstServiceOffering.getName(), result.getContent().get(0).getName());
+        assertEquals(secondServiceOffering.getName(), result.getContent().get(1).getName());
         // 5. Verify: verificar chamada ao repository.findAll
-        Mockito.verify(serviceOfferingRepository, Mockito.times(1)).findAll();
+        Mockito.verify(serviceOfferingRepository, Mockito.times(1)).findAll(pageable);
     }
 
     // =========================

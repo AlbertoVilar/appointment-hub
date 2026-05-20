@@ -15,6 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -457,14 +460,17 @@ class AppointmentServiceTest {
         secondAppointment.setStatus(AppointmentStatus.CONFIRMED);
         var appointments = List.of(firstAppointment, secondAppointment);
 
-        Mockito.when(appointmentRepository.findAll()).thenReturn(appointments);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        var result = appointmentService.findAll();
+        Mockito.when(appointmentRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(appointments, pageable, appointments.size()));
 
-        assertEquals(2, result.size());
-        assertEquals(firstAppointment.getId(), result.get(0).getId());
-        assertEquals(secondAppointment.getId(), result.get(1).getId());
-        Mockito.verify(appointmentRepository, Mockito.times(1)).findAll();
+        var result = appointmentService.findAll(pageable);
+
+        assertEquals(2, result.getContent().size());
+        assertEquals(firstAppointment.getId(), result.getContent().get(0).getId());
+        assertEquals(secondAppointment.getId(), result.getContent().get(1).getId());
+        Mockito.verify(appointmentRepository, Mockito.times(1)).findAll(pageable);
     }
 
     // =========================

@@ -5,11 +5,12 @@ import com.alberdev.study.appointmenthub.domain.exceptions.DomainException;
 import com.alberdev.study.appointmenthub.domain.exceptions.ResourceAlreadyExistsException;
 import com.alberdev.study.appointmenthub.domain.exceptions.ResourceNotFoundException;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.ServiceOfferingRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -46,9 +47,9 @@ public class ServiceOfferingService {
     }
 
     @Transactional(readOnly = true)
-    public List<ServiceOffering> findAll() {
+    public Page<ServiceOffering> findAll(Pageable pageable) {
 
-        return serviceOfferingRepository.findAll();
+        return serviceOfferingRepository.findAll(pageable);
     }
 
     @Transactional
