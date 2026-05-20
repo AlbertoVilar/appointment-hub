@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -62,19 +64,20 @@ class CustomerControllerTest {
         var customer = createValidCustomer();
         customer.setId(1L);
 
-        Mockito.when(customerService.findAll()).thenReturn(List.of(customer));
+        Mockito.when(customerService.findAll(Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(customer)));
 
         mockMvc.perform(get("/api/v1/customers")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].name").value("Joao Silva"))
-                .andExpect(jsonPath("$[0].email").value("joao@email.com"))
-                .andExpect(jsonPath("$[0].phone").value("11999999999"))
-                .andExpect(jsonPath("$[0].active").value(true));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].id").value(1L))
+                .andExpect(jsonPath("$.content[0].name").value("Joao Silva"))
+                .andExpect(jsonPath("$.content[0].email").value("joao@email.com"))
+                .andExpect(jsonPath("$.content[0].phone").value("11999999999"))
+                .andExpect(jsonPath("$.content[0].active").value(true));
 
-        Mockito.verify(customerService, Mockito.times(1)).findAll();
+        Mockito.verify(customerService, Mockito.times(1)).findAll(Mockito.any(Pageable.class));
     }
 
     @Test
@@ -94,7 +97,8 @@ class CustomerControllerTest {
                         .content(jsonBody)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/api/v1/customers/1")))
+                .andExpect(header().string("Location",
+                        org.hamcrest.Matchers.containsString("/api/v1/customers/1")))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value(savedCustomer.getName()));
 

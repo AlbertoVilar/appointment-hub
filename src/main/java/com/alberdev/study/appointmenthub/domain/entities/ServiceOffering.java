@@ -40,6 +40,14 @@ public class ServiceOffering {
     public ServiceOffering() {
     }
 
+    public ServiceOffering(Long id, String name, Integer durationInMinutes, BigDecimal basePrice) {
+        this.id = id;
+        this.name = name;
+        this.durationInMinutes = durationInMinutes;
+        this.basePrice = basePrice;
+
+    }
+
     public ServiceOffering(Long id, String name, Integer durationInMinutes, BigDecimal basePrice, boolean active) {
         this.id = id;
         this.name = name;

@@ -4,7 +4,8 @@ import com.alberdev.study.appointmenthub.api.dto.CustomerRequestDTO;
 import com.alberdev.study.appointmenthub.api.dto.CustomerResponseDTO;
 import com.alberdev.study.appointmenthub.api.mappers.CustomerMapper;
 import com.alberdev.study.appointmenthub.application.services.CustomerService;
-import com.alberdev.study.appointmenthub.domain.entities.Customer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,10 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
-@RequestMapping(value = "api/v1/customers")
+@RequestMapping(value = "/api/v1/customers")
 public class CustomerController {
 
     private final CustomerService service;
@@ -57,9 +57,9 @@ public class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponseDTO>> listCustomers() {
-        List<Customer> result = service.findAll();
-        return ResponseEntity.ok(result.stream().map(mapper::toCustomerResponseDTO).toList());
+    public ResponseEntity<Page<CustomerResponseDTO>> listCustomers(Pageable pageable) {
+        var customers = service.findAll(pageable);
+        return ResponseEntity.ok(customers.map(mapper::toCustomerResponseDTO));
     }
 
     @PatchMapping("/{id}/activate")

@@ -4,9 +4,9 @@ import com.alberdev.study.appointmenthub.domain.entities.Customer;
 import com.alberdev.study.appointmenthub.domain.exceptions.ResourceAlreadyExistsException;
 import com.alberdev.study.appointmenthub.domain.exceptions.ResourceNotFoundException;
 import com.alberdev.study.appointmenthub.infrastructure.repositories.CustomerRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CustomerService {
@@ -35,9 +35,8 @@ public class CustomerService {
         );
     }
 
-    public List<Customer> findAll() {
-        List<Customer> customers = customerRepository.findAll();
-        return customers;
+    public Page<Customer> findAll(Pageable pageable) {
+        return customerRepository.findAll(pageable);
     }
 
     public Customer update(Long id, Customer customerUpdate) {

@@ -12,6 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,17 +125,20 @@ class CustomerServiceTest {
         // 1. Arrange: criar uma lista com clientes validos
         List<Customer> customers = new ArrayList<>();
         customers.add(createValidCustomer());
-        // 2. Arrange: simular repository.findAll retornando essa lista
-        Mockito.when(customerRepository.findAll()).thenReturn(customers);
-        // 3. Act: chamar customerService.findAll()
-        List<Customer> result = customerService.findAll();
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // 2. Arrange: simular repository.findAll retornando uma pagina
+        Mockito.when(customerRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(customers, pageable, customers.size()));
+        // 3. Act: chamar customerService.findAll(pageable)
+        var result = customerService.findAll(pageable);
         // 4. Assert: validar se o que voltou está correto
         assertNotNull(result);
-        assertEquals(1, result.size()); // Agora o tamanho será 1, conforme planejado
-        assertEquals(customers.get(0).getName(), result.get(0).getName());
+        assertEquals(1, result.getContent().size());
+        assertEquals(customers.get(0).getName(), result.getContent().get(0).getName());
 
         // 5. Verify: garantir que o repositório foi consultado
-        Mockito.verify(customerRepository, Mockito.times(1)).findAll();
+        Mockito.verify(customerRepository, Mockito.times(1)).findAll(pageable);
     }
 
     // =========================
