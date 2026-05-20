@@ -17,6 +17,14 @@ public class ServiceOfferingMapper {
         );
     }
 
+    public ServiceOffering toServiceOfferingUpdate(ServiceOfferingRequestDTO requestDTO) {
+        ServiceOffering serviceOffering = new ServiceOffering();
+        serviceOffering.setName(requestDTO.name());
+        serviceOffering.setDurationInMinutes(requestDTO.durationInMinutes());
+        serviceOffering.setBasePrice(requestDTO.basePrice());
+        return serviceOffering;
+    }
+
     public ServiceOfferingResponseDTO toServiceOfferingResponseDTO(ServiceOffering serviceOffering) {
         return new ServiceOfferingResponseDTO(
                 serviceOffering.getId(),

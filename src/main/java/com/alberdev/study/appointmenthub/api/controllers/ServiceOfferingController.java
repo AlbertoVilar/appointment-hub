@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,5 +52,48 @@ public class ServiceOfferingController {
     public ResponseEntity<Page<ServiceOfferingResponseDTO>> findAll(Pageable pageable) {
         var serviceOfferings = offeringService.findAll(pageable);
         return ResponseEntity.ok(serviceOfferings.map(mapper::toServiceOfferingResponseDTO));
+    }
+
+    @PatchMapping(value = "/{id}")
+    public ResponseEntity<ServiceOfferingResponseDTO> update(@PathVariable Long id,
+                                                             @RequestBody ServiceOfferingRequestDTO requestDTO) {
+
+        var serviceOffering = mapper.toServiceOfferingUpdate(requestDTO);
+        var updatedServiceOffering = offeringService.updateServiceOffering(id, serviceOffering);
+        return ResponseEntity.ok(mapper.toServiceOfferingResponseDTO(updatedServiceOffering));
+
+    }
+
+    @PatchMapping(value = "/{id}/activate")
+    public ResponseEntity<Void> activate(@PathVariable Long id) {
+        offeringService.activate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(value = "/{id}/deactivate")
+    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+        offeringService.deactivate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(value = "/{id}/base-price")
+    public ResponseEntity<ServiceOfferingResponseDTO> updateBasePrice(@PathVariable Long id,
+                                                                      @RequestBody ServiceOfferingRequestDTO requestDTO) {
+        return ResponseEntity.ok(
+                mapper.toServiceOfferingResponseDTO(
+                        offeringService.updateBasePrice(id, requestDTO.basePrice())
+                )
+        );
+
+    }
+
+    @PatchMapping(value = "/{id}/duration")
+    public ResponseEntity<ServiceOfferingResponseDTO> updateDuration(@PathVariable Long id,
+                                                                     @RequestBody ServiceOfferingRequestDTO requestDTO) {
+        return ResponseEntity.ok(
+                mapper.toServiceOfferingResponseDTO(
+                        offeringService.updateDuration(id, requestDTO.durationInMinutes())
+                )
+        );
     }
 }

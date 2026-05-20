@@ -22,7 +22,7 @@ public final class ServiceOfferingTestData {
         var requestDTO = new ServiceOfferingRequestDTO(
                 "Odontologia",
                 45,
-                new BigDecimal("200.00")
+                BigDecimal.valueOf(200.00)
         );
         return requestDTO;
     }

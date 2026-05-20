@@ -16,11 +16,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.alberdev.study.appointmenthub.domain.entities.ServiceOfferingTestData.createServiceOfferingRequestDTO;
 import static com.alberdev.study.appointmenthub.domain.entities.ServiceOfferingTestData.createValidServiceOffering;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -72,8 +74,8 @@ class ServiceOfferingControllerTest {
 
         Mockito.when(service.findById(serviceOffering.getId())).thenReturn(serviceOffering);
 
-        mockMvc.perform(get("/api/v1/service-offerings/{id}", 1)
-                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/v1/service-offerings/{id}", serviceOffering.getId())
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(serviceOffering.getId()))
                 .andExpect(jsonPath("$.name").value(serviceOffering.getName()))
@@ -104,6 +106,114 @@ class ServiceOfferingControllerTest {
                 .andExpect(jsonPath("$.content[0].active").value(serviceOffering.isActive()));
 
         Mockito.verify(service, Mockito.times(1)).findAll(Mockito.any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar servico quando dados forem validos")
+    void shouldUpdateServiceOfferingWhenDataIsValid() throws Exception {
+        Long id = 1L;
+        var requestDTO = createServiceOfferingRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        var updatedServiceOffering = createValidServiceOffering();
+        updatedServiceOffering.setId(id);
+
+        Mockito.when(service.updateServiceOffering(Mockito.eq(id), Mockito.any(ServiceOffering.class)))
+                .thenReturn(updatedServiceOffering);
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(updatedServiceOffering.getId()))
+                .andExpect(jsonPath("$.name").value(updatedServiceOffering.getName()))
+                .andExpect(jsonPath("$.durationInMinutes").value(updatedServiceOffering.getDurationInMinutes()))
+                .andExpect(jsonPath("$.basePrice").value(updatedServiceOffering.getBasePrice().doubleValue()))
+                .andExpect(jsonPath("$.active").value(updatedServiceOffering.isActive()));
+
+        Mockito.verify(service, Mockito.times(1))
+                .updateServiceOffering(Mockito.eq(id), Mockito.any(ServiceOffering.class));
+    }
+
+    @Test
+    @DisplayName("Deve ativar servico")
+    void shouldActivateServiceOffering() throws Exception {
+        Long id = 1L;
+
+        Mockito.doNothing().when(service).activate(id);
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/activate", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        Mockito.verify(service, Mockito.times(1)).activate(id);
+    }
+
+    @Test
+    @DisplayName("Deve desativar servico")
+    void shouldDeactivateServiceOffering() throws Exception {
+        Long id = 1L;
+
+        Mockito.doNothing().when(service).deactivate(id);
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/deactivate", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        Mockito.verify(service, Mockito.times(1)).deactivate(id);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar preco base do servico")
+    void shouldUpdateServiceOfferingBasePrice() throws Exception {
+        Long id = 1L;
+        var requestDTO = createServiceOfferingRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        var updatedServiceOffering = createValidServiceOffering();
+        updatedServiceOffering.setId(id);
+        updatedServiceOffering.setBasePrice(requestDTO.basePrice());
+
+        Mockito.when(service.updateBasePrice(Mockito.eq(id), Mockito.any(BigDecimal.class)))
+                .thenReturn(updatedServiceOffering);
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/base-price", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.basePrice").value(requestDTO.basePrice().doubleValue()));
+
+        Mockito.verify(service, Mockito.times(1))
+                .updateBasePrice(Mockito.eq(id), Mockito.any(BigDecimal.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar duracao do servico")
+    void shouldUpdateServiceOfferingDuration() throws Exception {
+        Long id = 1L;
+        var requestDTO = createServiceOfferingRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        var updatedServiceOffering = createValidServiceOffering();
+        updatedServiceOffering.setId(id);
+        updatedServiceOffering.setDurationInMinutes(requestDTO.durationInMinutes());
+
+        Mockito.when(service.updateDuration(Mockito.eq(id), Mockito.any(Integer.class)))
+                .thenReturn(updatedServiceOffering);
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/duration", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.durationInMinutes").value(requestDTO.durationInMinutes()));
+
+        Mockito.verify(service, Mockito.times(1))
+                .updateDuration(Mockito.eq(id), Mockito.any(Integer.class));
     }
 
 }
