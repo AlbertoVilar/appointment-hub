@@ -1,5 +1,7 @@
 package com.alberdev.study.appointmenthub.domain.entities;
 
+import com.alberdev.study.appointmenthub.api.dto.ProfessionalRequestDTO;
+
 public final class ProfessionalTestData {
 
     private ProfessionalTestData() {
@@ -13,4 +15,13 @@ public final class ProfessionalTestData {
         professional.setAppUser(AppUserTestData.createValidAppUser());
         return professional;
     }
+
+    public static ProfessionalRequestDTO createProfessionalRequestDTO() {
+        return new ProfessionalRequestDTO(
+                "Dra. Ana Costa",
+                "Fisioterapia",
+                1L
+        );
+    }
+
 }
