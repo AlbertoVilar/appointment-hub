@@ -3,6 +3,9 @@ package com.alberdev.study.appointmenthub.api.controllers;
 import com.alberdev.study.appointmenthub.api.mappers.CustomerMapper;
 import com.alberdev.study.appointmenthub.application.services.CustomerService;
 import com.alberdev.study.appointmenthub.domain.entities.Customer;
+import com.alberdev.study.appointmenthub.domain.exceptions.DomainException;
+import com.alberdev.study.appointmenthub.domain.exceptions.ResourceAlreadyExistsException;
+import com.alberdev.study.appointmenthub.domain.exceptions.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -155,6 +158,109 @@ class CustomerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
+
+        Mockito.verify(customerService, Mockito.times(1)).deactivate(id);
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao buscar cliente inexistente")
+    void shouldReturnErrorWhenCustomerDoesNotExist() throws Exception {
+        Long id = 99L;
+
+        Mockito.when(customerService.findById(id))
+                .thenThrow(new ResourceNotFoundException("Cliente nao encontrado com id " + id));
+
+        mockMvc.perform(get("/api/v1/customers/{id}", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Cliente nao encontrado com id " + id))
+                .andExpect(jsonPath("$.path").value("/api/v1/customers/" + id));
+
+        Mockito.verify(customerService, Mockito.times(1)).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao criar cliente com email ja cadastrado")
+    void shouldReturnErrorWhenCreatingCustomerWithExistingEmail() throws Exception {
+        var requestDto = createCustomerRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDto);
+
+        Mockito.when(customerService.create(Mockito.any(Customer.class)))
+                .thenThrow(new ResourceAlreadyExistsException("Ja existe cliente cadastrado com este email."));
+
+        mockMvc.perform(post("/api/v1/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("Ja existe cliente cadastrado com este email."))
+                .andExpect(jsonPath("$.path").value("/api/v1/customers"));
+
+        Mockito.verify(customerService, Mockito.times(1)).create(Mockito.any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao atualizar cliente inexistente")
+    void shouldReturnErrorWhenUpdatingCustomerThatDoesNotExist() throws Exception {
+        Long id = 99L;
+        var requestDto = createCustomerRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDto);
+
+        Mockito.when(customerService.update(Mockito.eq(id), Mockito.any(Customer.class)))
+                .thenThrow(new ResourceNotFoundException("Cliente nao encontrado com id " + id));
+
+        mockMvc.perform(patch("/api/v1/customers/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Cliente nao encontrado com id " + id))
+                .andExpect(jsonPath("$.path").value("/api/v1/customers/" + id));
+
+        Mockito.verify(customerService, Mockito.times(1))
+                .update(Mockito.eq(id), Mockito.any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao ativar cliente ja ativo")
+    void shouldReturnErrorWhenActivatingAlreadyActiveCustomer() throws Exception {
+        Long id = 1L;
+
+        Mockito.doThrow(new DomainException("Cliente ja esta ativo."))
+                .when(customerService).activate(id);
+
+        mockMvc.perform(patch("/api/v1/customers/{id}/activate", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Cliente ja esta ativo."))
+                .andExpect(jsonPath("$.path").value("/api/v1/customers/" + id + "/activate"));
+
+        Mockito.verify(customerService, Mockito.times(1)).activate(id);
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao desativar cliente inexistente")
+    void shouldReturnErrorWhenDeactivatingCustomerThatDoesNotExist() throws Exception {
+        Long id = 99L;
+
+        Mockito.doThrow(new ResourceNotFoundException("Cliente nao encontrado com id " + id))
+                .when(customerService).deactivate(id);
+
+        mockMvc.perform(patch("/api/v1/customers/{id}/deactivate", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Cliente nao encontrado com id " + id))
+                .andExpect(jsonPath("$.path").value("/api/v1/customers/" + id + "/deactivate"));
 
         Mockito.verify(customerService, Mockito.times(1)).deactivate(id);
     }

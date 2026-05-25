@@ -3,6 +3,9 @@ package com.alberdev.study.appointmenthub.api.controllers;
 import com.alberdev.study.appointmenthub.api.mappers.ServiceOfferingMapper;
 import com.alberdev.study.appointmenthub.application.services.ServiceOfferingService;
 import com.alberdev.study.appointmenthub.domain.entities.ServiceOffering;
+import com.alberdev.study.appointmenthub.domain.exceptions.DomainException;
+import com.alberdev.study.appointmenthub.domain.exceptions.ResourceAlreadyExistsException;
+import com.alberdev.study.appointmenthub.domain.exceptions.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -211,6 +214,157 @@ class ServiceOfferingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.durationInMinutes").value(requestDTO.durationInMinutes()));
+
+        Mockito.verify(service, Mockito.times(1))
+                .updateDuration(Mockito.eq(id), Mockito.any(Integer.class));
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao buscar servico inexistente")
+    void shouldReturnErrorWhenServiceOfferingDoesNotExist() throws Exception {
+        Long id = 99L;
+
+        Mockito.when(service.findById(id))
+                .thenThrow(new ResourceNotFoundException("Servico nao encontrado com id = " + id));
+
+        mockMvc.perform(get("/api/v1/service-offerings/{id}", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Servico nao encontrado com id = " + id))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings/" + id));
+
+        Mockito.verify(service, Mockito.times(1)).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao criar servico ja existente")
+    void shouldReturnErrorWhenCreatingExistingServiceOffering() throws Exception {
+        var requestDTO = createServiceOfferingRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        Mockito.when(service.create(Mockito.any(ServiceOffering.class)))
+                .thenThrow(new ResourceAlreadyExistsException("O servico ja existe"));
+
+        mockMvc.perform(post("/api/v1/service-offerings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("O servico ja existe"))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings"));
+
+        Mockito.verify(service, Mockito.times(1)).create(Mockito.any(ServiceOffering.class));
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao atualizar servico inexistente")
+    void shouldReturnErrorWhenUpdatingServiceOfferingThatDoesNotExist() throws Exception {
+        Long id = 99L;
+        var requestDTO = createServiceOfferingRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        Mockito.when(service.updateServiceOffering(Mockito.eq(id), Mockito.any(ServiceOffering.class)))
+                .thenThrow(new ResourceNotFoundException("Servico nao encontrado com id = " + id));
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Servico nao encontrado com id = " + id))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings/" + id));
+
+        Mockito.verify(service, Mockito.times(1))
+                .updateServiceOffering(Mockito.eq(id), Mockito.any(ServiceOffering.class));
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao ativar servico inexistente")
+    void shouldReturnErrorWhenActivatingServiceOfferingThatDoesNotExist() throws Exception {
+        Long id = 99L;
+
+        Mockito.doThrow(new ResourceNotFoundException("Servico nao encontrado com id = " + id))
+                .when(service).activate(id);
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/activate", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Servico nao encontrado com id = " + id))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings/" + id + "/activate"));
+
+        Mockito.verify(service, Mockito.times(1)).activate(id);
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao desativar servico ja inativo")
+    void shouldReturnErrorWhenDeactivatingAlreadyInactiveServiceOffering() throws Exception {
+        Long id = 1L;
+
+        Mockito.doThrow(new DomainException("Este servico ja esta desativado."))
+                .when(service).deactivate(id);
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/deactivate", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Este servico ja esta desativado."))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings/" + id + "/deactivate"));
+
+        Mockito.verify(service, Mockito.times(1)).deactivate(id);
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao atualizar preco base invalido")
+    void shouldReturnErrorWhenUpdatingServiceOfferingWithInvalidBasePrice() throws Exception {
+        Long id = 1L;
+        var requestDTO = createServiceOfferingRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        Mockito.when(service.updateBasePrice(Mockito.eq(id), Mockito.any(BigDecimal.class)))
+                .thenThrow(new DomainException("O preco base nao pode ser nulo, zero ou negativo."));
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/base-price", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("O preco base nao pode ser nulo, zero ou negativo."))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings/" + id + "/base-price"));
+
+        Mockito.verify(service, Mockito.times(1))
+                .updateBasePrice(Mockito.eq(id), Mockito.any(BigDecimal.class));
+    }
+
+    @Test
+    @DisplayName("Deve lancar erro ao atualizar duracao invalida")
+    void shouldReturnErrorWhenUpdatingServiceOfferingWithInvalidDuration() throws Exception {
+        Long id = 1L;
+        var requestDTO = createServiceOfferingRequestDTO();
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        Mockito.when(service.updateDuration(Mockito.eq(id), Mockito.any(Integer.class)))
+                .thenThrow(new DomainException("A duracao nao pode ser nula, zero ou negativa."));
+
+        mockMvc.perform(patch("/api/v1/service-offerings/{id}/duration", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("A duracao nao pode ser nula, zero ou negativa."))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings/" + id + "/duration"));
 
         Mockito.verify(service, Mockito.times(1))
                 .updateDuration(Mockito.eq(id), Mockito.any(Integer.class));
