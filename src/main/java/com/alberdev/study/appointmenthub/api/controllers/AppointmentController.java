@@ -7,6 +7,7 @@ import com.alberdev.study.appointmenthub.api.dto.AppointmentResponseDTO;
 import com.alberdev.study.appointmenthub.api.mappers.AppointmentMapper;
 import com.alberdev.study.appointmenthub.application.services.AppointmentService;
 import com.alberdev.study.appointmenthub.domain.entities.Appointment;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ResponseEntity<AppointmentResponseDTO> create(@RequestBody AppointmentRequestDTO requestDTO) {
+    public ResponseEntity<AppointmentResponseDTO> create(@RequestBody @Valid AppointmentRequestDTO requestDTO) {
 
         Appointment appointment = appointmentService.schedule(
                 requestDTO.customerId(),
@@ -69,7 +70,7 @@ public class AppointmentController {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<AppointmentResponseDTO> cancel(
             @PathVariable Long id,
-            @RequestBody(required = false) AppointmentCancelRequestDTO requestDTO
+            @RequestBody(required = false) @Valid AppointmentCancelRequestDTO requestDTO
     ) {
         Appointment appointment;
         if (requestDTO != null && requestDTO.reason() != null && !requestDTO.reason().isBlank()) {
@@ -83,7 +84,7 @@ public class AppointmentController {
     @PatchMapping("/{id}/reschedule")
     public ResponseEntity<AppointmentResponseDTO> reschedule(
             @PathVariable Long id,
-            @RequestBody AppointmentRescheduleRequestDTO requestDTO
+            @RequestBody @Valid AppointmentRescheduleRequestDTO requestDTO
     ) {
         Appointment appointment = appointmentService.reschedule(id, requestDTO.scheduledAt());
         return ResponseEntity.ok(mapper.toAppointmentResponseDTO(appointment));

@@ -4,6 +4,7 @@ import com.alberdev.study.appointmenthub.api.dto.ServiceOfferingRequestDTO;
 import com.alberdev.study.appointmenthub.api.dto.ServiceOfferingResponseDTO;
 import com.alberdev.study.appointmenthub.api.mappers.ServiceOfferingMapper;
 import com.alberdev.study.appointmenthub.application.services.ServiceOfferingService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class ServiceOfferingController {
     }
 
     @PostMapping
-    public ResponseEntity<ServiceOfferingResponseDTO> create(@RequestBody ServiceOfferingRequestDTO requestDTO) {
+    public ResponseEntity<ServiceOfferingResponseDTO> create(@RequestBody @Valid ServiceOfferingRequestDTO requestDTO) {
         var savedEntity = offeringService.create(mapper.toServiceOffering(requestDTO));
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -56,7 +57,7 @@ public class ServiceOfferingController {
 
     @PatchMapping(value = "/{id}")
     public ResponseEntity<ServiceOfferingResponseDTO> update(@PathVariable Long id,
-                                                             @RequestBody ServiceOfferingRequestDTO requestDTO) {
+                                                             @RequestBody @Valid ServiceOfferingRequestDTO requestDTO) {
 
         var serviceOffering = mapper.toServiceOfferingUpdate(requestDTO);
         var updatedServiceOffering = offeringService.updateServiceOffering(id, serviceOffering);

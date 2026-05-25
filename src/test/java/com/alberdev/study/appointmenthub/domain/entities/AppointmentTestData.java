@@ -41,7 +41,7 @@ public final class AppointmentTestData {
                 1L,
                 1L,
                 1L,
-                LocalDateTime.of(2026, 5, 25, 14, 30),
+                LocalDateTime.of(2030, 5, 25, 14, 30),
                 "Agendamento Teste"
         );
     }
@@ -52,7 +52,7 @@ public final class AppointmentTestData {
         appointment.getCustomer().setId(1L);
         appointment.getProfessional().setId(1L);
         appointment.getServiceOffering().setId(1L);
-        appointment.setScheduledAt(LocalDateTime.of(2026, 5, 25, 14, 30));
+        appointment.setScheduledAt(LocalDateTime.of(2030, 5, 25, 14, 30));
         return appointment;
     }
 

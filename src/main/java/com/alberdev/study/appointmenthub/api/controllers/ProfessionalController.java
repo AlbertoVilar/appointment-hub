@@ -4,6 +4,7 @@ import com.alberdev.study.appointmenthub.api.dto.ProfessionalRequestDTO;
 import com.alberdev.study.appointmenthub.api.dto.ProfessionalResponseDTO;
 import com.alberdev.study.appointmenthub.api.mappers.ProfessionalMapper;
 import com.alberdev.study.appointmenthub.application.services.ProfessionalService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class ProfessionalController {
     }
 
     @PostMapping
-    public ResponseEntity<ProfessionalResponseDTO> create(@RequestBody ProfessionalRequestDTO requestDTO) {
+    public ResponseEntity<ProfessionalResponseDTO> create(@RequestBody @Valid ProfessionalRequestDTO requestDTO) {
         var savedProfessional = service.create(mapper.toProfessional(requestDTO));
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -56,7 +57,7 @@ public class ProfessionalController {
 
     @PatchMapping(value = "/{id}")
     public ResponseEntity<ProfessionalResponseDTO> update(@PathVariable Long id,
-                                                          @RequestBody ProfessionalRequestDTO requestDTO) {
+                                                          @RequestBody @Valid ProfessionalRequestDTO requestDTO) {
         var professionalUpdate = mapper.toProfessionalUpdate(requestDTO);
         var updatedProfessional = service.update(id, professionalUpdate);
         return ResponseEntity.ok(mapper.toProfessionalResponseDTO(updatedProfessional));
