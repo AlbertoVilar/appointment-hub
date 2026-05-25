@@ -77,7 +77,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.customerId").value(requestDTO.customerId()))
                 .andExpect(jsonPath("$.professionalId").value(requestDTO.professionalId()))
                 .andExpect(jsonPath("$.serviceOfferingId").value(requestDTO.serviceOfferingId()))
-                .andExpect(jsonPath("$.scheduledAt").value("2026-05-25T14:30:00"))
+                .andExpect(jsonPath("$.scheduledAt").value("2030-05-25T14:30:00"))
                 .andExpect(jsonPath("$.status").value("SCHEDULED"))
                 .andExpect(jsonPath("$.notes").value(requestDTO.notes()));
 
@@ -110,7 +110,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.customerId").value(appointment.getCustomer().getId()))
                 .andExpect(jsonPath("$.professionalId").value(appointment.getProfessional().getId()))
                 .andExpect(jsonPath("$.serviceOfferingId").value(appointment.getServiceOffering().getId()))
-                .andExpect(jsonPath("$.scheduledAt").value("2026-05-25T14:30:00"))
+                .andExpect(jsonPath("$.scheduledAt").value("2030-05-25T14:30:00"))
                 .andExpect(jsonPath("$.status").value("SCHEDULED"))
                 .andExpect(jsonPath("$.notes").value(appointment.getNotes()));
         // 7. Verify: verificar chamada ao service.findById(id)
@@ -140,7 +140,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.content[0].customerId").value(appointment.getCustomer().getId()))
                 .andExpect(jsonPath("$.content[0].professionalId").value(appointment.getProfessional().getId()))
                 .andExpect(jsonPath("$.content[0].serviceOfferingId").value(appointment.getServiceOffering().getId()))
-                .andExpect(jsonPath("$.content[0].scheduledAt").value("2026-05-25T14:30:00"))
+                .andExpect(jsonPath("$.content[0].scheduledAt").value("2030-05-25T14:30:00"))
                 .andExpect(jsonPath("$.content[0].status").value("SCHEDULED"))
                 .andExpect(jsonPath("$.content[0].notes").value(appointment.getNotes()));
         // 7. Verify: verificar chamada ao service.findAll(...)
@@ -427,9 +427,6 @@ class AppointmentControllerTest {
         );
         String jsonBody = objectMapper.writeValueAsString(requestDTO);
 
-        Mockito.when(service.reschedule(Mockito.eq(id), Mockito.eq(requestDTO.scheduledAt())))
-                .thenThrow(new DomainException("A data do agendamento nao pode estar no passado."));
-
         mockMvc.perform(patch("/api/v1/appointments/{id}/reschedule", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
@@ -440,8 +437,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.message").value("A data do agendamento nao pode estar no passado."))
                 .andExpect(jsonPath("$.path").value("/api/v1/appointments/" + id + "/reschedule"));
 
-        Mockito.verify(service, Mockito.times(1))
-                .reschedule(Mockito.eq(id), Mockito.eq(requestDTO.scheduledAt()));
+        Mockito.verifyNoInteractions(service);
     }
 
     @Test

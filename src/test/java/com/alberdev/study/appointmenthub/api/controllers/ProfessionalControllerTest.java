@@ -230,25 +230,21 @@ class ProfessionalControllerTest {
         // 2. Arrange: serializar requestDTO para JSON
         String jsonBody = objectMapper.writeValueAsString(requestDTO);
 
-        // 3. Arrange: simular service.create(...) lancando DomainException
-        Mockito.when(service.create(Mockito.any(Professional.class)))
-                .thenThrow(new DomainException("O profissional precisa estar vinculado a um usuario."));
-
-        // 4. Act: executar POST /api/v1/professionals
+        // 3. Act: executar POST /api/v1/professionals
         mockMvc.perform(post("/api/v1/professionals")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
                         .accept(MediaType.APPLICATION_JSON))
 
-                // 5. Assert: validar status esperado para erro de regra de dominio
+                // 4. Assert: validar status esperado para erro de validacao
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("O profissional precisa estar vinculado a um usuario."))
                 .andExpect(jsonPath("$.path").value("/api/v1/professionals"));
 
-        // 6. Verify: verificar chamada ao service.create(...)
-        Mockito.verify(service, Mockito.times(1)).create(Mockito.any(Professional.class));
+        // 5. Verify: validar que a service nao foi chamada quando o DTO e invalido
+        Mockito.verifyNoInteractions(service);
     }
 
     @Test

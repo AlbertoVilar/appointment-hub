@@ -4,6 +4,7 @@ import com.alberdev.study.appointmenthub.api.dto.CustomerRequestDTO;
 import com.alberdev.study.appointmenthub.api.dto.CustomerResponseDTO;
 import com.alberdev.study.appointmenthub.api.mappers.CustomerMapper;
 import com.alberdev.study.appointmenthub.application.services.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<CustomerResponseDTO> create(@RequestBody CustomerRequestDTO requestDTO) {
+    public ResponseEntity<CustomerResponseDTO> create(@RequestBody @Valid CustomerRequestDTO requestDTO) {
         var customer = service.create(mapper.toCustomer(requestDTO));
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -50,7 +51,7 @@ public class CustomerController {
 
     @PatchMapping(value = "/{id}")
     public ResponseEntity<CustomerResponseDTO> update(@PathVariable Long id,
-                                                      @RequestBody CustomerRequestDTO requestDTO) {
+                                                      @RequestBody @Valid CustomerRequestDTO requestDTO) {
         var customerUpdate = mapper.toCustomerUpdate(requestDTO);
         var updatedCustomer = service.update(id, customerUpdate);
         return ResponseEntity.ok(mapper.toCustomerResponseDTO(updatedCustomer));
