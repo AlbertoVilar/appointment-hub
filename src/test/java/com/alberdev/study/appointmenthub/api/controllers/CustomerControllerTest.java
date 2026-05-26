@@ -1,5 +1,6 @@
 package com.alberdev.study.appointmenthub.api.controllers;
 
+import com.alberdev.study.appointmenthub.api.dto.CustomerRequestDTO;
 import com.alberdev.study.appointmenthub.api.mappers.CustomerMapper;
 import com.alberdev.study.appointmenthub.application.services.CustomerService;
 import com.alberdev.study.appointmenthub.domain.entities.Customer;
@@ -107,6 +108,32 @@ class CustomerControllerTest {
 
         Mockito.verify(customerService, Mockito.times(1))
                 .create(org.mockito.ArgumentMatchers.any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("Deve retornar erros de validacao ao criar cliente com nome invalido")
+    void shouldReturnValidationErrorsWhenCreatingCustomerWithInvalidName() throws Exception {
+        var requestDto = new CustomerRequestDTO(
+                "A",
+                "cliente@email.com",
+                "11999999999"
+        );
+        String jsonBody = objectMapper.writeValueAsString(requestDto);
+
+        mockMvc.perform(post("/api/v1/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("O nome deve ter entre 3 e 50 caracteres"))
+                .andExpect(jsonPath("$.path").value("/api/v1/customers"))
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value("name"))
+                .andExpect(jsonPath("$.errors[0].message").value("O nome deve ter entre 3 e 50 caracteres"));
+
+        Mockito.verify(customerService, Mockito.never()).create(Mockito.any(Customer.class));
     }
 
     @Test

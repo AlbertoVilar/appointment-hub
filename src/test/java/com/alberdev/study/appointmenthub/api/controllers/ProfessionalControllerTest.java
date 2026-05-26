@@ -241,7 +241,10 @@ class ProfessionalControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("O profissional precisa estar vinculado a um usuario."))
-                .andExpect(jsonPath("$.path").value("/api/v1/professionals"));
+                .andExpect(jsonPath("$.path").value("/api/v1/professionals"))
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value("appUserId"))
+                .andExpect(jsonPath("$.errors[0].message").value("O profissional precisa estar vinculado a um usuario."));
 
         // 5. Verify: validar que a service nao foi chamada quando o DTO e invalido
         Mockito.verifyNoInteractions(service);

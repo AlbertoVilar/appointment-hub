@@ -1,5 +1,6 @@
 package com.alberdev.study.appointmenthub.api.controllers;
 
+import com.alberdev.study.appointmenthub.api.dto.ServiceOfferingRequestDTO;
 import com.alberdev.study.appointmenthub.api.mappers.ServiceOfferingMapper;
 import com.alberdev.study.appointmenthub.application.services.ServiceOfferingService;
 import com.alberdev.study.appointmenthub.domain.entities.ServiceOffering;
@@ -67,6 +68,32 @@ class ServiceOfferingControllerTest {
 
         Mockito.verify(service, Mockito.times(1))
                 .create(org.mockito.ArgumentMatchers.any(ServiceOffering.class));
+    }
+
+    @Test
+    @DisplayName("Deve retornar erros de validacao ao criar servico com preco invalido")
+    void shouldReturnValidationErrorsWhenCreatingServiceOfferingWithInvalidBasePrice() throws Exception {
+        var requestDTO = new ServiceOfferingRequestDTO(
+                "Consulta",
+                30,
+                BigDecimal.ZERO
+        );
+        String jsonBody = objectMapper.writeValueAsString(requestDTO);
+
+        mockMvc.perform(post("/api/v1/service-offerings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("O preço base deve ser maior que zero"))
+                .andExpect(jsonPath("$.path").value("/api/v1/service-offerings"))
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value("basePrice"))
+                .andExpect(jsonPath("$.errors[0].message").value("O preço base deve ser maior que zero"));
+
+        Mockito.verify(service, Mockito.never()).create(Mockito.any(ServiceOffering.class));
     }
 
     @Test

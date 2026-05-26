@@ -1,6 +1,8 @@
 package com.alberdev.study.appointmenthub.api.handlers;
 
 import com.alberdev.study.appointmenthub.api.handlers.fielderror.ApiError;
+import com.alberdev.study.appointmenthub.api.handlers.validation.FieldMessage;
+import com.alberdev.study.appointmenthub.api.handlers.validation.ValidationError;
 import com.alberdev.study.appointmenthub.domain.exceptions.BusinessException;
 import com.alberdev.study.appointmenthub.domain.exceptions.DomainException;
 import com.alberdev.study.appointmenthub.domain.exceptions.ResourceAlreadyExistsException;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -40,21 +43,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex,
-                                                                         HttpServletRequest request) {
-        String message = ex.getBindingResult()
+    public ResponseEntity<ValidationError> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex,
+                                                                                HttpServletRequest request) {
+        List<FieldMessage> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .findFirst()
-                .map(fieldError -> fieldError.getDefaultMessage())
-                .orElse("Dados inválidos.");
+                .map(fieldError -> new FieldMessage(fieldError.getField(), fieldError.getDefaultMessage()))
+                .toList();
 
-        ApiError error = new ApiError(
+        String message = errors.stream()
+                .findFirst()
+                .map(FieldMessage::message)
+                .orElse("Dados invalidos.");
+
+        ValidationError error = new ValidationError(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 message,
-                request.getRequestURI()
+                request.getRequestURI(),
+                errors
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);

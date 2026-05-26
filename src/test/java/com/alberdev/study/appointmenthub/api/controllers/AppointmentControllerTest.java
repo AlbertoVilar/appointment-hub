@@ -232,7 +232,7 @@ class AppointmentControllerTest {
 
         // 2. Arrange: criar AppointmentRescheduleRequestDTO com nova data futura
         var requestDTO = new AppointmentRescheduleRequestDTO(
-                LocalDateTime.of(2026, 5, 26, 15, 0)
+                LocalDateTime.of(2030, 5, 26, 15, 0)
         );
 
         // 3. Arrange: serializar requestDTO para JSON
@@ -261,7 +261,7 @@ class AppointmentControllerTest {
 
                 // 8. Assert: validar $.scheduledAt e $.status
                 .andExpect(jsonPath("$.id").value(appointment.getId()))
-                .andExpect(jsonPath("$.scheduledAt").value("2026-05-26T15:00:00"))
+                .andExpect(jsonPath("$.scheduledAt").value("2030-05-26T15:00:00"))
                 .andExpect(jsonPath("$.status").value(appointment.getStatus().name()));
 
         // 9. Verify: verificar chamada ao service.reschedule(id, scheduledAt)
@@ -435,7 +435,10 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("A data do agendamento nao pode estar no passado."))
-                .andExpect(jsonPath("$.path").value("/api/v1/appointments/" + id + "/reschedule"));
+                .andExpect(jsonPath("$.path").value("/api/v1/appointments/" + id + "/reschedule"))
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value("scheduledAt"))
+                .andExpect(jsonPath("$.errors[0].message").value("A data do agendamento nao pode estar no passado."));
 
         Mockito.verifyNoInteractions(service);
     }
