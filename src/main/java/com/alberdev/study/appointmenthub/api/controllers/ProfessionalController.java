@@ -4,6 +4,10 @@ import com.alberdev.study.appointmenthub.api.dto.ProfessionalRequestDTO;
 import com.alberdev.study.appointmenthub.api.dto.ProfessionalResponseDTO;
 import com.alberdev.study.appointmenthub.api.mappers.ProfessionalMapper;
 import com.alberdev.study.appointmenthub.application.services.ProfessionalService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +25,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping(value = "/api/v1/professionals")
+@Tag(name = "Professionals", description = "Operações para gerenciamento de profissionais.")
 public class ProfessionalController {
 
     private final ProfessionalService service;
@@ -32,6 +37,12 @@ public class ProfessionalController {
     }
 
     @PostMapping
+    @Operation(summary = "Cadastra um novo profissional")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Profissional criado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Payload inválido."),
+            @ApiResponse(responseCode = "409", description = "Usuário já vinculado a outro profissional.")
+    })
     public ResponseEntity<ProfessionalResponseDTO> create(@RequestBody @Valid ProfessionalRequestDTO requestDTO) {
         var savedProfessional = service.create(mapper.toProfessional(requestDTO));
 
@@ -44,18 +55,34 @@ public class ProfessionalController {
     }
 
     @GetMapping(value = "/{id}")
+    @Operation(summary = "Busca um profissional por id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profissional encontrado com sucesso."),
+            @ApiResponse(responseCode = "404", description = "Profissional não encontrado.")
+    })
     public ResponseEntity<ProfessionalResponseDTO> findById(@PathVariable Long id) {
         var professional = service.findById(id);
         return ResponseEntity.ok(mapper.toProfessionalResponseDTO(professional));
     }
 
     @GetMapping
+    @Operation(summary = "Lista profissionais de forma paginada")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profissionais listados com sucesso.")
+    })
     public ResponseEntity<Page<ProfessionalResponseDTO>> findAll(Pageable pageable) {
         var professionals = service.findAll(pageable);
         return ResponseEntity.ok(professionals.map(mapper::toProfessionalResponseDTO));
     }
 
     @PatchMapping(value = "/{id}")
+    @Operation(summary = "Atualiza os dados de um profissional")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profissional atualizado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Payload inválido."),
+            @ApiResponse(responseCode = "404", description = "Profissional não encontrado."),
+            @ApiResponse(responseCode = "409", description = "Usuário já vinculado a outro profissional.")
+    })
     public ResponseEntity<ProfessionalResponseDTO> update(@PathVariable Long id,
                                                           @RequestBody @Valid ProfessionalRequestDTO requestDTO) {
         var professionalUpdate = mapper.toProfessionalUpdate(requestDTO);
@@ -64,18 +91,36 @@ public class ProfessionalController {
     }
 
     @PatchMapping(value = "/{id}/activate")
+    @Operation(summary = "Ativa um profissional")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Profissional ativado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Operação inválida para o estado atual do profissional."),
+            @ApiResponse(responseCode = "404", description = "Profissional não encontrado.")
+    })
     public ResponseEntity<Void> activate(@PathVariable Long id) {
         service.activate(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping(value = "/{id}/deactivate")
+    @Operation(summary = "Desativa um profissional")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Profissional desativado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Operação inválida para o estado atual do profissional."),
+            @ApiResponse(responseCode = "404", description = "Profissional não encontrado.")
+    })
     public ResponseEntity<Void> deactivate(@PathVariable Long id) {
         service.deactivate(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping(value = "/{id}/specialty")
+    @Operation(summary = "Atualiza a especialidade de um profissional")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Especialidade atualizada com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Especialidade inválida."),
+            @ApiResponse(responseCode = "404", description = "Profissional não encontrado.")
+    })
     public ResponseEntity<ProfessionalResponseDTO> updateSpecialty(@PathVariable Long id,
                                                                    @RequestBody ProfessionalRequestDTO requestDTO) {
         var updatedProfessional = service.updateSpecialty(id, requestDTO.specialty());
