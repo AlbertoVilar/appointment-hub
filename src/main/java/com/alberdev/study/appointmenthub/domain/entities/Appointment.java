@@ -2,19 +2,10 @@ package com.alberdev.study.appointmenthub.domain.entities;
 
 import com.alberdev.study.appointmenthub.domain.enums.AppointmentStatus;
 import com.alberdev.study.appointmenthub.domain.exceptions.DomainException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Objects;
 
 @Entity
@@ -26,6 +17,10 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "professional_id", nullable = false)
@@ -48,10 +43,7 @@ public class Appointment {
     @Column(name = "cancel_reason", length = 500)
     private String cancelReason;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
-
+    // Construtores
     public Appointment() {
     }
 
@@ -67,153 +59,135 @@ public class Appointment {
         this.cancelReason = cancelReason;
     }
 
-    public Long getId() {
-        return id;
-    }
+    // Getters e Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Customer getCustomer() { return customer; }
+    public void setCustomer(Customer customer) { this.customer = customer; }
+    public Professional getProfessional() { return professional; }
+    public void setProfessional(Professional professional) { this.professional = professional; }
+    public ServiceOffering getServiceOffering() { return serviceOffering; }
+    public void setServiceOffering(ServiceOffering serviceOffering) { this.serviceOffering = serviceOffering; }
+    public LocalDateTime getScheduledAt() { return scheduledAt; }
+    public void setScheduledAt(LocalDateTime scheduledAt) { this.scheduledAt = scheduledAt; }
+    public AppointmentStatus getStatus() { return status; }
+    public void setStatus(AppointmentStatus status) { this.status = status; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // Comportamentos de Domínio (Regras de Negócio)
+    public void assignCustomer(Customer customer) {
+        if (customer == null) {
+            throw new DomainException("Cliente nao pode ser nulo.");
+        }
+        if (!customer.isActive()) {
+            throw new DomainException("Nao e possivel agendar para um cliente inativo.");
+        }
 
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
         this.customer = customer;
     }
 
-    public Professional getProfessional() {
-        return professional;
-    }
+    public void assignProfessional(Professional professional) {
+        if (professional == null) {
+            throw new DomainException("Profissional nao pode ser nulo.");
+        }
+        if (!professional.isActive()) {
+            throw new DomainException("Nao e possivel agendar com um profissional inativo.");
+        }
 
-    public void setProfessional(Professional professional) {
         this.professional = professional;
     }
 
-    public ServiceOffering getServiceOffering() {
-        return serviceOffering;
-    }
+    public void assignServiceOffering(ServiceOffering serviceOffering) {
+        if (serviceOffering == null) {
+            throw new DomainException("Servico nao pode ser nulo.");
+        }
+        if (!serviceOffering.isActive()) {
+            throw new DomainException("Nao e possivel agendar um servico inativo.");
+        }
 
-    public void setServiceOffering(ServiceOffering serviceOffering) {
         this.serviceOffering = serviceOffering;
     }
 
-    public LocalDateTime getScheduledAt() {
-        return scheduledAt;
-    }
+    public void scheduleAt(LocalDateTime scheduledAt) {
+        if (scheduledAt == null) {
+            throw new DomainException("A data do agendamento nao pode ser nula.");
+        }
+        if (scheduledAt.isBefore(LocalDateTime.now())) {
+            throw new DomainException("A data do agendamento nao pode estar no passado.");
+        }
 
-    public void setScheduledAt(LocalDateTime scheduledAt) {
         this.scheduledAt = scheduledAt;
     }
 
-    public AppointmentStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(AppointmentStatus status) {
-        this.status = status;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public String getCancelReason() {
-        return cancelReason;
-    }
-
-    public void setCancelReason(String cancelReason) {
-        this.cancelReason = cancelReason;
-    }
-
-    // Domain behavior to implement when appointment rules are modeled.
     public void confirm() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        ensureStatusIn(AppointmentStatus.SCHEDULED);
+        this.status = AppointmentStatus.CONFIRMED;
+    }
+
+    public void cancel() {
+        cancel("");
     }
 
     public void cancel(String reason) {
-        if (this.status == AppointmentStatus.CANCELED) {
-            throw new DomainException("Agendamento ja esta cancelado.");
+        if (reason == null) {
+            throw new DomainException("Motivo do cancelamento nao pode ser nulo.");
         }
-        if (this.status == AppointmentStatus.DONE) {
-            throw new DomainException("Nao e possivel cancelar um atendimento concluido.");
-        }
-        if (this.status == AppointmentStatus.NO_SHOW) {
-            throw new DomainException("Nao e possivel cancelar: o cliente nao compareceu.");
-        }
+        ensureStatusIn(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED);
 
         this.status = AppointmentStatus.CANCELED;
+
         this.cancelReason = reason;
     }
 
     public void markAsDone() {
-        if (this.status == AppointmentStatus.DONE) {
-            throw new DomainException("Este atendimento ja foi concluido.");
-        }
-        if (this.status == AppointmentStatus.CANCELED) {
-            throw new DomainException("Nao e possivel concluir um agendamento cancelado.");
-        }
-        if (this.status != AppointmentStatus.CONFIRMED) {
-            throw new DomainException("So e possivel concluir agendamentos confirmados.");
-        }
+        ensureStatusIn(AppointmentStatus.CONFIRMED);
 
         if (LocalDateTime.now().isBefore(scheduledAt)) {
-            throw new DomainException("Nao e possivel concluir um agendamento antes do horario previsto.");
+            throw new DomainException("Não é possível concluir um agendamento antes do horário previsto.");
         }
 
         this.status = AppointmentStatus.DONE;
     }
 
     public void markAsNoShow() {
-        if (this.status == AppointmentStatus.CANCELED) {
-            throw new DomainException("Agendamento ja esta cancelado.");
-        }
-        if (this.status == AppointmentStatus.DONE) {
-            throw new DomainException("Nao e possivel marcar no-show para um atendimento ja concluido.");
-        }
-        if (this.status == AppointmentStatus.NO_SHOW) {
-            throw new DomainException("Este agendamento ja esta marcado como no-show.");
-        }
+        ensureStatusIn(AppointmentStatus.CONFIRMED);
 
-        // TODO: Keep this threshold configurable when application settings exist.
         if (LocalDateTime.now().isBefore(scheduledAt.plusMinutes(NO_SHOW_GRACE_MINUTES))) {
-            throw new DomainException("Ainda nao e possivel marcar falta antes da janela configurada.");
+            throw new DomainException("Ainda não é possível marcar falta antes da janela de tolerância configurada.");
         }
 
         this.status = AppointmentStatus.NO_SHOW;
     }
 
     public void reschedule(LocalDateTime newScheduledAt) {
-        if (this.status == AppointmentStatus.DONE) {
-            throw new DomainException("Nao e possivel reagendar um atendimento ja concluido.");
-        }
-        if (this.status == AppointmentStatus.CANCELED) {
-            throw new DomainException("Agendamento ja esta cancelado, faca um novo agendamento.");
-        }
-        if (this.status == AppointmentStatus.NO_SHOW) {
-            throw new DomainException("Este agendamento ja esta marcado como no-show, faca um novo agendamento.");
-        }
-        if (newScheduledAt.isBefore(LocalDateTime.now())) {
-            throw new DomainException("Nao e possivel reagendar para uma data que ja passou.");
+        ensureStatusIn(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED);
+
+        scheduleAt(newScheduledAt);
+        this.status = AppointmentStatus.SCHEDULED;
+    }
+
+    // Métodos Auxiliares e Guardiões
+    private void ensureStatusIn(AppointmentStatus... allowedStatuses) {
+        for (AppointmentStatus allowedStatus : allowedStatuses) {
+            if (this.status == allowedStatus) {
+                return;
+            }
         }
 
-        this.scheduledAt = newScheduledAt;
-        this.status = AppointmentStatus.SCHEDULED;
+        throw new DomainException(
+                "Transição proibida: o agendamento está em " + this.status +
+                        ", mas esta operação exige um destes status: " +
+                        Arrays.toString(allowedStatuses) + "."
+        );
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Appointment that = (Appointment) o;
         return id != null && Objects.equals(id, that.id);
     }
